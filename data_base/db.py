@@ -7,7 +7,6 @@ def start_db():
   cur = db.cursor()
   if db:
     print('Database connected')
-  # db.commit()
 
 def get_dists():
   dists = cur.execute('SELECT * FROM districts;').fetchall()
@@ -41,6 +40,4 @@ def get_farmers(user, cul, dists, regs):
   elif len(user.regs) == 1 and len(cul) == 1:
     x = cur.execute(f"SELECT * FROM farmers WHERE region = '{regs[0]}' AND culture = '{cul[0]}';").fetchall()
     farms = random.sample(x, len(x)) 
-  print(regs)
-  print(f'FARMS {farms}')
   return farms

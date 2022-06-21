@@ -214,7 +214,6 @@ def change_regs_kb(res, user):
   kb.add(InlineKeyboardButton(f"Назад", callback_data=f"Назад_rg"))
   if len(user.get_regs()) >= 1:
     kb.add(InlineKeyboardButton(f"Подтвердить", callback_data=f"Подтвердить_rg"))
-  # print(kb)
   return kb
 
 # Клавиатура для зерна
@@ -314,5 +313,4 @@ def change_cults_kb(res, user):
   kb.add(InlineKeyboardButton(f"Назад", callback_data=f"Назад_cl"))
   if len(user.get_cults()) >= 1:
     kb.add(InlineKeyboardButton(f"Подтвердить", callback_data=f"Подтвердить_cl"))
-  # print(kb)
   return kb
