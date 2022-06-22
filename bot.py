@@ -11,6 +11,7 @@ async def on_startup(_):
 from handlers import client, common
 
 client.return_client_handlers(dp)
+common.return_common_handlers(dp)
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True, on_startup=on_startup)

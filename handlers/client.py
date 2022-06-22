@@ -9,6 +9,10 @@ from handlers import common
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from users import create_user as User
+from google_sheets import sheet
+from time import sleep
+# import threading
+from threading import Timer
 
 # Машина состояний для обработки сообщения обратной связи
 
@@ -16,6 +20,14 @@ class FSMFeedback(StatesGroup):
   feedback = State()
 
 # Начало бота
+
+# def a():
+#   # await sleep(2)
+#   print(100)
+# t = Timer(2, a, args=None, kwargs=None)
+# t.start()
+
+
 
 async def start_message(message:types.Message):
   users = db.cur.execute('SELECT * FROM users;').fetchall()
@@ -39,20 +51,21 @@ async def choose_role(call:types.CallbackQuery):
   await bot.edit_message_text(f'Вы выбрали роль - {res}', call.from_user.id, call.message.message_id, reply_markup=rm_kb.start_kb())
 
 async def return_to_start(call:types.CallbackQuery):
-  await bot.send_message(call.from_user.id, common.start_text, reply_markup=rm_kb.start_kb())
+  await bot.edit_message_text(common.start_text, call.from_user.id, call.message.message_id,reply_markup=rm_kb.start_kb())
 
 async def bot_targets(call:types.CallbackQuery):
-  await bot.edit_message_text( f'Этот бот нужен для...', call.from_user.id, call.message.message_id, reply_markup=rm_kb.target_back_kb())
+  await bot.edit_message_text(common.bot_target, call.from_user.id, call.message.message_id, reply_markup=rm_kb.target_back_kb())
   await call.answer()
 
 async def feedback(call:types.CallbackQuery):
   await FSMFeedback.feedback.set()
-  await bot.edit_message_text( f'Здесь Вы можете поделиться своим мнением о Боте либо задать интересующий Вас вопрос технической поддержке!', call.from_user.id, call.message.message_id)
+  await bot.edit_message_text(f'Здесь Вы можете поделиться своим мнением о Боте либо задать интересующий Вас вопрос технической поддержке!', call.from_user.id, call.message.message_id)
 
 async def feedback_answer(message:types.Message, state:FSMContext):
   async with state.proxy() as data:
       data[feedback] = message.text
-      # print(data[feedback])  ЭТО В БАЗУ ДАННЫХ - ОТВЕТ ОТ ЮЗЕРА
+      # Запись сообщения обратной связи в гугл таблицу
+      sheet.write_feedback(message.from_user.id, data[feedback])
   await bot.send_message(message.from_user.id, 'Спасибо за обратную свзяь!')
   await state.finish()
   await bot.send_message(message.from_user.id, common.start_text, reply_markup=rm_kb.start_kb())
@@ -167,11 +180,20 @@ async def back(call:types.CallbackQuery):
     user.dists = []
     await bot.edit_message_text(common.start_text,call.from_user.id, call.message.message_id, reply_markup=rm_kb.start_kb())
   elif call.data == 'Назад_rg':
+    user.dists = []
     user.regs = []
     await bot.edit_message_text( f'Выберите ФО', call.from_user.id, call.message.message_id, reply_markup=rm_kb.dists_kb())
+  elif call.data == 'Назад_cl':
+    if user.get_regs() == 0:
+      user.dists = []
+      user.cults = []
+      await bot.edit_message_text( f'Выберите ФО', call.from_user.id, call.message.message_id, reply_markup=rm_kb.dists_kb())
+    else:
+      user.regs = []
+      user.cults = []
+      await bot.edit_message_text(f'Выберите регионы', call.from_user.id, call.message.message_id, reply_markup=rm_kb.regs_kb(user))
 
-
-
+# Обработка хендлеров
 
 def return_client_handlers(dp: Dispatcher):
   dp.register_message_handler(start_message, commands=['start'])
