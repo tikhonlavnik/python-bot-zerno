@@ -6,7 +6,7 @@ import json
 CREDENTIALS_FILE = 'creds.json'
 credentials = Credentials.from_service_account_file(CREDENTIALS_FILE)
 service = build('sheets', 'v4', credentials=credentials)
-spreadsheet_id = '1HHBxWVvx0Qy7zWMIek2A8neDAZAFH-HkWPiqRi9RAyg'
+spreadsheet_id = 'id'
 
 def write_feedback(user_id, feedback):
   service.spreadsheets().values().append(
